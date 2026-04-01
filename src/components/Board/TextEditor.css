@@ -1,0 +1,23 @@
+.text-editor-container {
+  position: fixed;
+  z-index: 1000;
+  padding: 4px;
+  border: 2px dashed #3b82f6;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.text-editor-input {
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: Arial, sans-serif;
+  line-height: 1.2;
+  padding: 4px;
+  background: transparent;
+  overflow: hidden;
+}
+
+.text-editor-input::placeholder {
+  color: #9ca3af;
+}

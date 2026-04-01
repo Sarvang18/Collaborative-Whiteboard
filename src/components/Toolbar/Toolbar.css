@@ -1,0 +1,51 @@
+.toolbar {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  background: white;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 32px;
+  background: #e5e7eb;
+  margin: 0 4px;
+}
+
+.tool-button {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.tool-button:hover {
+  background: #f3f4f6;
+}
+
+.tool-button.active {
+  background: #3b82f6;
+}
+
+.tool-button.active .tool-icon {
+  filter: brightness(0) invert(1);
+}
+
+.tool-icon {
+  font-size: 20px;
+}

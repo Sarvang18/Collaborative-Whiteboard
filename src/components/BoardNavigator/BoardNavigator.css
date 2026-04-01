@@ -1,0 +1,87 @@
+.board-navigator {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+
+.nav-button {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: background 0.2s;
+  color: #374151;
+}
+
+.nav-button:hover {
+  background: #f3f4f6;
+}
+
+.nav-button.create-button {
+  font-size: 24px;
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+.nav-button.create-button:hover {
+  background: #dbeafe;
+}
+
+.board-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 12px;
+  min-width: 120px;
+}
+
+.board-info-button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.board-info-button:hover {
+  background: #f3f4f6;
+}
+
+.board-info-button .board-info {
+  padding: 8px 12px;
+}
+
+.board-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.board-count {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.nav-divider {
+  width: 1px;
+  height: 32px;
+  background: #e5e7eb;
+  margin: 0 4px;
+}

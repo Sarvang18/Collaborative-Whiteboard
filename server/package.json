@@ -1,0 +1,15 @@
+{
+  "name": "whiteboard-server",
+  "version": "1.0.0",
+  "description": "WebSocket server for collaborative whiteboard real-time synchronization",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.6.1",
+    "cors": "^2.8.5"
+  }
+}
