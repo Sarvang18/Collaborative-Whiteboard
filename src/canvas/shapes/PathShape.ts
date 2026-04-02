@@ -8,7 +8,7 @@ export class PathShape extends BaseShape {
   }
 
   render(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
-    if (this.data.points.length < 2) return
+    if (!this.data.points || this.data.points.length < 2) return
 
     this.applyTransform(ctx, viewport)
 

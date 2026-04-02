@@ -2,13 +2,16 @@ import { CanvasElement } from '../../types/shapes'
 import { Viewport } from './Viewport'
 import { ShapeRenderer } from '../renderers/ShapeRenderer'
 import { SelectionRenderer } from '../renderers/SelectionRenderer'
+import { ConnectorRenderer } from '../renderers/ConnectorRenderer'
 import { useCanvasStore } from '../../store/canvasStore'
+import { useConnectorStore } from '../../store/connectorStore'
 
 export class CanvasEngine {
   private ctx: CanvasRenderingContext2D
   private viewport: Viewport
   private renderer: ShapeRenderer
   private selectionRenderer: SelectionRenderer
+  private connectorRenderer: ConnectorRenderer
   private rafId: number | null = null
   private elements = new Map<string, CanvasElement>()
   private selectedIds = new Set<string>()
@@ -23,6 +26,7 @@ export class CanvasEngine {
     this.viewport = new Viewport(viewportState)
     this.renderer = new ShapeRenderer()
     this.selectionRenderer = new SelectionRenderer()
+    this.connectorRenderer = new ConnectorRenderer()
   }
 
   resize() {
@@ -74,6 +78,13 @@ export class CanvasEngine {
       this.renderer.render(element, this.ctx, this.viewport)
     }
 
+    // Draw connectors
+    const connectors = useConnectorStore.getState().connectors
+    const selectedConnectorId = useConnectorStore.getState().selectedConnectorId
+    for (const [id, connector] of connectors.entries()) {
+      this.connectorRenderer.render(connector, this.ctx, this.viewport, id === selectedConnectorId)
+    }
+
     // Draw selection box (for area selection)
     const selectionBox = useCanvasStore.getState().selectionBox
     if (selectionBox) {
@@ -95,8 +106,8 @@ export class CanvasEngine {
         const bounds = {
           x: element.x,
           y: element.y,
-          width: element.width,
-          height: element.height,
+          width: element.width || 0,
+          height: element.height || 0,
         }
         this.selectionRenderer.render(this.ctx, bounds, this.viewport)
       }

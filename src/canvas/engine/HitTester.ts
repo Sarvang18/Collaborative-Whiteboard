@@ -11,8 +11,8 @@ export class HitTester {
     return {
       x: element.x,
       y: element.y,
-      width: element.width,
-      height: element.height,
+      width: element.width || 0,
+      height: element.height || 0,
     }
   }
 

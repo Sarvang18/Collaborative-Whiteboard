@@ -29,7 +29,7 @@ export function useSelection(engine: CanvasEngine | null, canvasRef: React.RefOb
       if (!element) return null
 
       const handleSize = 8 / engine.getViewport().scale
-      const { x, y, width, height } = element
+      const { x, y, width = 0, height = 0 } = element
 
       const handles = [
         { type: 'nw' as const, x: x, y: y },
@@ -78,8 +78,8 @@ export function useSelection(engine: CanvasEngine | null, canvasRef: React.RefOb
             elementStartPos.current.set(selectedId, { 
               x: el.x, 
               y: el.y, 
-              width: el.width, 
-              height: el.height 
+              width: el.width || 0, 
+              height: el.height || 0 
             })
           }
           return
@@ -111,8 +111,8 @@ export function useSelection(engine: CanvasEngine | null, canvasRef: React.RefOb
                 clicked.id,
                 rect.left + screenPos.x,
                 rect.top + screenPos.y,
-                clicked.width * engine.getViewport().scale,
-                clicked.height * engine.getViewport().scale,
+                (clicked.width || 0) * engine.getViewport().scale,
+                (clicked.height || 0) * engine.getViewport().scale,
                 clicked.text || 'Type here...',
                 clicked.fontSize
               )
@@ -120,7 +120,7 @@ export function useSelection(engine: CanvasEngine | null, canvasRef: React.RefOb
             return
           }
 
-          (canvas as any).lastClickTime = now
+          (canvas as any).lastClickTime = now;
           (canvas as any).lastClickId = clicked.id
         }
         
@@ -132,7 +132,7 @@ export function useSelection(engine: CanvasEngine | null, canvasRef: React.RefOb
         currentSelectedIds.forEach(id => {
           const el = elements.get(id)
           if (el) {
-            elementStartPos.current.set(id, { x: el.x, y: el.y, width: el.width, height: el.height })
+            elementStartPos.current.set(id, { x: el.x, y: el.y, width: el.width || 0, height: el.height || 0 })
           }
         })
       } else {
@@ -159,6 +159,8 @@ export function useSelection(engine: CanvasEngine | null, canvasRef: React.RefOb
         const selectedIds = useCanvasStore.getState().selectedIds
         if (selectedIds.size === 1) {
           const selectedId = Array.from(selectedIds)[0]
+          const element = useCanvasStore.getState().elements.get(selectedId)
+          console.log('Checking resize handle for element:', element?.type, element?.width, element?.height)
           const handle = getResizeHandle(worldPos, selectedId)
           
           const cursors: Record<string, string> = {
@@ -210,6 +212,8 @@ export function useSelection(engine: CanvasEngine | null, canvasRef: React.RefOb
           if (newWidth < 10) newWidth = 10
           if (newHeight < 10) newHeight = 10
 
+          console.log('Resizing:', selectedId, { newX, newY, newWidth, newHeight })
+
           useCanvasStore.getState().updateElement(selectedId, {
             x: newX,
             y: newY,
@@ -257,8 +261,8 @@ export function useSelection(engine: CanvasEngine | null, canvasRef: React.RefOb
             if (
               el.x >= box.x &&
               el.y >= box.y &&
-              el.x + el.width <= box.x + box.width &&
-              el.y + el.height <= box.y + box.height
+              el.x + (el.width || 0) <= box.x + box.width &&
+              el.y + (el.height || 0) <= box.y + box.height
             ) {
               selected.push(id)
             }

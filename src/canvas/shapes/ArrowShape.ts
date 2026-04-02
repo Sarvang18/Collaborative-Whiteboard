@@ -1,16 +1,16 @@
-import { BaseShapeData } from '../../types/shapes'
+import { CanvasElement } from '../../types/shapes'
 import { Viewport } from '../engine/Viewport'
 import { BaseShape } from './BaseShape'
 
 export class ArrowShape extends BaseShape {
-  constructor(protected data: BaseShapeData) {
+  constructor(protected data: CanvasElement) {
     super(data)
   }
 
   render(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
     this.applyTransform(ctx, viewport)
 
-    const { width, height, fill, stroke, strokeWidth } = this.data
+    const { width = 100, height = 100, fill, stroke, strokeWidth } = this.data
     const headWidth = Math.min(width * 0.3, height)
     const shaftHeight = height * 0.4
 

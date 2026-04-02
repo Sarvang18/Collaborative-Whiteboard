@@ -14,13 +14,14 @@ export function useZoomPan(engine: CanvasEngine | null, canvasRef: React.RefObje
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
-      const delta = e.deltaY > 0 ? -0.1 : 0.1
-      const rect = canvas.getBoundingClientRect()
-      const focal = { x: e.clientX - rect.left, y: e.clientY - rect.top }
-      
-      const viewport = engine.getViewport()
-      viewport.zoomAt(focal, delta)
-      engine.setViewport(viewport.x, viewport.y, viewport.scale)
+      // Zoom disabled - boards have fixed size
+      // const delta = e.deltaY > 0 ? -0.1 : 0.1
+      // const rect = canvas.getBoundingClientRect()
+      // const focal = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+      // 
+      // const viewport = engine.getViewport()
+      // viewport.zoomAt(focal, delta)
+      // engine.setViewport(viewport.x, viewport.y, viewport.scale)
     }
 
     const handleMouseDown = (e: MouseEvent) => {

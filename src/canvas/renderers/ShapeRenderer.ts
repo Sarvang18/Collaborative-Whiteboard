@@ -8,6 +8,7 @@ import { TriangleShape } from '../shapes/TriangleShape'
 import { StarShape } from '../shapes/StarShape'
 import { ArrowShape } from '../shapes/ArrowShape'
 import { LineShape } from '../shapes/LineShape'
+import { ImageShape } from '../shapes/ImageShape'
 
 export class ShapeRenderer {
   render(element: CanvasElement, ctx: CanvasRenderingContext2D, viewport: Viewport) {
@@ -50,6 +51,11 @@ export class ShapeRenderer {
         }
         case 'line': {
           const shape = new LineShape(element)
+          shape.render(ctx, viewport)
+          break
+        }
+        case 'image': {
+          const shape = new ImageShape(element)
           shape.render(ctx, viewport)
           break
         }

@@ -1,11 +1,14 @@
 import { create } from 'zustand'
 import { CanvasElement } from '../types/shapes'
+import { Connector } from '../types/connector'
 
 interface HistoryEntry {
   type: 'add' | 'update' | 'delete'
-  elementId: string
-  before?: CanvasElement
-  after?: CanvasElement
+  elementId?: string
+  connectorId?: string
+  before?: CanvasElement | Connector
+  after?: CanvasElement | Connector
+  isConnector?: boolean
 }
 
 interface HistoryState {

@@ -20,7 +20,7 @@ export function BoardsOverview({ onClose }: BoardsOverviewProps) {
     onClose()
   }
 
-  const handleDeleteBoard = (e: React.MouseEvent, boardId: string, index: number) => {
+  const handleDeleteBoard = (e: React.MouseEvent, boardId: string) => {
     e.stopPropagation()
     if (boards.size <= 1) {
       alert('Cannot delete the last board')
@@ -60,7 +60,7 @@ export function BoardsOverview({ onClose }: BoardsOverviewProps) {
                   <span className="board-card-name">{board.name}</span>
                   <button
                     className="delete-board-button"
-                    onClick={(e) => handleDeleteBoard(e, boardId, index)}
+                    onClick={(e) => handleDeleteBoard(e, boardId)}
                     title="Delete board"
                   >
                     🗑️

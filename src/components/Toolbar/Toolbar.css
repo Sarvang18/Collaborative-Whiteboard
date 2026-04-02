@@ -46,6 +46,13 @@
   filter: brightness(0) invert(1);
 }
 
+.tool-button.disabled,
+.tool-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .tool-icon {
   font-size: 20px;
 }

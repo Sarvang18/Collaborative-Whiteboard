@@ -28,7 +28,8 @@
     "react-dom": "^18.2.0",
     "zustand": "^4.4.7",
     "socket.io-client": "^4.6.1",
-    "nanoid": "^5.0.4"
+    "nanoid": "^5.0.4",
+    "jspdf": "^2.5.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

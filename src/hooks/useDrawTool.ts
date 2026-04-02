@@ -5,16 +5,66 @@ import { useUIStore } from '../store/uiStore'
 import { useHistoryStore } from '../store/historyStore'
 import { generateId } from '../utils/idgen'
 import { CanvasElement } from '../types/shapes'
+import { ShapeLibraryService } from '../services/ShapeLibraryService'
 
 export function useDrawTool(engine: CanvasEngine | null, canvasRef: React.RefObject<HTMLCanvasElement>) {
   const activeTool = useUIStore((s) => s.activeTool)
+  const pendingShape = useUIStore((s) => s.pendingShape)
+  const setPendingShape = useUIStore((s) => s.setPendingShape)
   const isDrawing = useRef(false)
   const startPos = useRef({ x: 0, y: 0 })
   const currentElement = useRef<string | null>(null)
   const pathPoints = useRef<Array<{ x: number; y: number }>>([])
 
+  // Handle pending shape placement
   useEffect(() => {
-    if (!engine || !canvasRef.current || activeTool === 'select' || activeTool === 'pan') return
+    if (!engine || !canvasRef.current || !pendingShape) return
+
+    const canvas = canvasRef.current
+
+    const handleShapeClick = (e: MouseEvent) => {
+      if (e.button !== 0) return
+
+      const rect = canvas.getBoundingClientRect()
+      const screenPos = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+      const worldPos = engine.getViewport().screenToWorld(screenPos)
+
+      // Create shape at click position
+      const shape = ShapeLibraryService.createShape(pendingShape, worldPos.x, worldPos.y)
+      if (shape) {
+        useCanvasStore.getState().addElement(shape)
+        
+        // Save to history
+        useHistoryStore.getState().push([{
+          type: 'add',
+          elementId: shape.id,
+          after: shape,
+        }])
+      }
+
+      // Clear pending shape
+      setPendingShape(null)
+    }
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setPendingShape(null)
+      }
+    }
+
+    canvas.addEventListener('mousedown', handleShapeClick)
+    window.addEventListener('keydown', handleEscape)
+    canvas.style.cursor = 'crosshair'
+
+    return () => {
+      canvas.removeEventListener('mousedown', handleShapeClick)
+      window.removeEventListener('keydown', handleEscape)
+      canvas.style.cursor = 'default'
+    }
+  }, [engine, canvasRef, pendingShape, setPendingShape])
+
+  useEffect(() => {
+    if (!engine || !canvasRef.current || activeTool === 'select' || activeTool === 'pan' || pendingShape) return
 
     const canvas = canvasRef.current
 
@@ -168,5 +218,5 @@ export function useDrawTool(engine: CanvasEngine | null, canvasRef: React.RefObj
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [engine, canvasRef, activeTool])
+  }, [engine, canvasRef, activeTool, pendingShape])
 }

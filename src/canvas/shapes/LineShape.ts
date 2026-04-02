@@ -1,16 +1,16 @@
-import { BaseShapeData } from '../../types/shapes'
+import { CanvasElement } from '../../types/shapes'
 import { Viewport } from '../engine/Viewport'
 import { BaseShape } from './BaseShape'
 
 export class LineShape extends BaseShape {
-  constructor(protected data: BaseShapeData) {
+  constructor(protected data: CanvasElement) {
     super(data)
   }
 
   render(ctx: CanvasRenderingContext2D, viewport: Viewport): void {
     this.applyTransform(ctx, viewport)
 
-    const { width, height, stroke, strokeWidth } = this.data
+    const { width = 100, height = 100, stroke, strokeWidth } = this.data
 
     ctx.beginPath()
     ctx.moveTo(0, 0)

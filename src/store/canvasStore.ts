@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { CanvasElement, BoundingBox } from '../types/shapes'
+import { useUIStore } from './uiStore'
 
 interface CanvasState {
   boardId: string
@@ -135,6 +136,12 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   addElement: (el) =>
     set((state) => {
+      // Check read-only mode
+      if (useUIStore.getState().isReadOnly) {
+        console.warn('Cannot add element in read-only mode')
+        return state
+      }
+      
       const next = new Map(state.elements)
       next.set(el.id, el)
       
@@ -153,10 +160,16 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   updateElement: (id, patch) =>
     set((state) => {
+      // Check read-only mode
+      if (useUIStore.getState().isReadOnly) {
+        console.warn('Cannot update element in read-only mode')
+        return state
+      }
+      
       const next = new Map(state.elements)
       const existing = next.get(id)
       if (existing) {
-        next.set(id, { ...existing, ...patch })
+        next.set(id, { ...existing, ...patch } as CanvasElement)
       }
       
       // Update current board
@@ -170,6 +183,12 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   deleteElements: (ids) =>
     set((state) => {
+      // Check read-only mode
+      if (useUIStore.getState().isReadOnly) {
+        console.warn('Cannot delete elements in read-only mode')
+        return state
+      }
+      
       const next = new Map(state.elements)
       ids.forEach((id) => next.delete(id))
       
