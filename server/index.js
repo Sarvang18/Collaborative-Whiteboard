@@ -11,7 +11,7 @@ const io = new Server(httpServer, {
   cors: { origin: '*' }
 })
 
-const boards = new Map()
+const boards = new Map() // Store persistent board state: { elements: Map, connectors: Map }
 const users = new Map()
 const shares = new Map() // Store shared board data
 
@@ -20,8 +20,13 @@ io.on('connection', (socket) => {
   
   console.log(`User ${userId} connected to board ${boardId}`)
 
+  // Initialize board if it doesn't exist
   if (!boards.has(boardId)) {
-    boards.set(boardId, { elements: [], version: 0 })
+    boards.set(boardId, { 
+      elements: new Map(), 
+      connectors: new Map(),
+      version: 0 
+    })
   }
 
   socket.join(boardId)
@@ -29,8 +34,17 @@ io.on('connection', (socket) => {
   const color = '#' + Math.floor(Math.random() * 16777215).toString(16)
   users.set(socket.id, { userId, boardId, color })
 
-  // Send current board state
-  socket.emit('board_state', boards.get(boardId))
+  // Send current board state to the newly connected user
+  const boardState = boards.get(boardId)
+  const elementsArray = Array.from(boardState.elements.values())
+  const connectorsArray = Array.from(boardState.connectors.values())
+  
+  console.log(`📤 Sending board state to ${userId}: ${elementsArray.length} elements, ${connectorsArray.length} connectors`)
+  
+  socket.emit('board:sync', {
+    elements: elementsArray,
+    connectors: connectorsArray
+  })
 
   // Notify others
   socket.to(boardId).emit('user_joined', {
@@ -59,31 +73,64 @@ io.on('connection', (socket) => {
   // Real-time collaboration events
   socket.on('element:add', (element) => {
     console.log(`Broadcasting element:add to board ${boardId}`)
+    
+    // Store in server state
+    const board = boards.get(boardId)
+    board.elements.set(element.id, element)
+    
     socket.to(boardId).emit('element:add', element)
   })
 
   socket.on('element:update', (data) => {
     console.log(`Broadcasting element:update to board ${boardId}`)
+    
+    // Update in server state
+    const board = boards.get(boardId)
+    const existing = board.elements.get(data.id)
+    if (existing) {
+      board.elements.set(data.id, { ...existing, ...data.patch })
+    }
+    
     socket.to(boardId).emit('element:update', data)
   })
 
   socket.on('element:delete', (ids) => {
     console.log(`Broadcasting element:delete to board ${boardId}`)
+    
+    // Delete from server state
+    const board = boards.get(boardId)
+    ids.forEach(id => board.elements.delete(id))
+    
     socket.to(boardId).emit('element:delete', ids)
   })
 
   socket.on('connector:add', (connector) => {
     console.log(`Broadcasting connector:add to board ${boardId}`)
+    
+    // Store in server state
+    const board = boards.get(boardId)
+    board.connectors.set(connector.id, connector)
+    
     socket.to(boardId).emit('connector:add', connector)
   })
 
   socket.on('connector:update', (data) => {
     console.log(`Broadcasting connector:update to board ${boardId}`)
+    
+    // Update in server state
+    const board = boards.get(boardId)
+    board.connectors.set(data.id, data.connector)
+    
     socket.to(boardId).emit('connector:update', data)
   })
 
   socket.on('connector:delete', (id) => {
     console.log(`Broadcasting connector:delete to board ${boardId}`)
+    
+    // Delete from server state
+    const board = boards.get(boardId)
+    board.connectors.delete(id)
+    
     socket.to(boardId).emit('connector:delete', id)
   })
 
@@ -118,7 +165,31 @@ app.post('/api/share', (req, res) => {
       createdAt: new Date().toISOString()
     })
     
-    console.log(`Created share ${shareId} for board ${boardId}`)
+    // Also populate the board state on the server if it doesn't exist or is empty
+    if (!boards.has(boardId)) {
+      boards.set(boardId, {
+        elements: new Map(),
+        connectors: new Map(),
+        version: 0
+      })
+    }
+    
+    const board = boards.get(boardId)
+    
+    // Populate with shared elements if board is empty
+    if (board.elements.size === 0 && elements.length > 0) {
+      elements.forEach(el => {
+        board.elements.set(el.id, el)
+      })
+    }
+    
+    if (board.connectors.size === 0 && connectors.length > 0) {
+      connectors.forEach(conn => {
+        board.connectors.set(conn.id, conn)
+      })
+    }
+    
+    console.log(`Created share ${shareId} for board ${boardId} with ${elements.length} elements, ${connectors.length} connectors`)
     
     res.json({ success: true, shareId })
   } catch (error) {

@@ -20,6 +20,7 @@ import { ShareMenu } from '../ExportImport/ShareMenu'
 import { TemplatesPanel } from '../Templates/TemplatesPanel'
 import { ShapeLibraryPanel } from '../ShapeLibrary/ShapeLibraryPanel'
 import { ShareService } from '../../services/ShareService'
+import { PersistenceService } from '../../services/PersistenceService'
 
 export function Board() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -48,6 +49,51 @@ export function Board() {
   const isReceivingUpdate = useRef(false)
   const boardId = useCanvasStore((s) => s.boardId)
   const unsubscribeRef = useRef<(() => void)[]>([])
+  const elements = useCanvasStore((s) => s.elements)
+  const connectors = useConnectorStore((s) => s.connectors)
+
+  // Load persisted state from localStorage on mount
+  useEffect(() => {
+    const loadPersistedState = () => {
+      const persistedData = PersistenceService.loadBoardState(boardId)
+      if (persistedData && persistedData.elements.length > 0) {
+        console.log('📂 Loading persisted board state from localStorage')
+        
+        isReceivingUpdate.current = true
+        
+        useCanvasStore.getState().clearBoard()
+        useConnectorStore.getState().clearConnectors()
+        
+        persistedData.elements.forEach((element) => {
+          addElement(element)
+        })
+        
+        persistedData.connectors.forEach((connector) => {
+          addConnector(connector)
+        })
+        
+        setTimeout(() => {
+          isReceivingUpdate.current = false
+        }, 100)
+      }
+    }
+
+    // Only load if not a shared board (shared boards load from server)
+    if (!ShareService.hasShareData()) {
+      loadPersistedState()
+    }
+  }, [boardId, addElement, addConnector])
+
+  // Auto-save to localStorage whenever elements or connectors change
+  useEffect(() => {
+    if (isReceivingUpdate.current) return
+    
+    const timeoutId = setTimeout(() => {
+      PersistenceService.saveBoardState(boardId, elements, connectors)
+    }, 500) // Debounce saves by 500ms
+
+    return () => clearTimeout(timeoutId)
+  }, [elements, connectors, boardId])
 
   // Check for shared board on mount
   useEffect(() => {
@@ -62,29 +108,8 @@ export function Board() {
           
           console.log('Loading shared board, original boardId:', originalBoardId)
           
-          // Block ALL broadcasts during initial load
-          isReceivingUpdate.current = true
-          
-          setReadOnly(false)
-          
-          useCanvasStore.getState().clearBoard()
-          useConnectorStore.getState().clearConnectors()
-          
-          shareData.elements.forEach((element) => {
-            addElement(element)
-          })
-
-          if (shareData.connectors) {
-            shareData.connectors.forEach((connector) => {
-              addConnector(connector)
-            })
-          }
-
-          // Unblock broadcasts after load completes
-          setTimeout(() => {
-            isReceivingUpdate.current = false
-            console.log('✅ Initial load complete, broadcasts enabled')
-          }, 1000)
+          // Don't load elements here - let the socket sync handle it
+          // The server will send the current board state via board:sync event
 
           if (permission === 'view') {
             setReadOnly(true)
@@ -100,7 +125,7 @@ export function Board() {
     }
 
     loadSharedBoard()
-  }, [addElement, addConnector, setReadOnly])
+  }, [setReadOnly])
 
   useEffect(() => {
     if (!canvasRef.current) return
@@ -219,6 +244,36 @@ export function Board() {
         })
         
         unsubscribeRef.current = [unsub1, unsub2]
+      })
+
+      // Listen for initial board sync from server
+      socket.on('board:sync', ({ elements, connectors }: any) => {
+        console.log('📥 Received board sync:', elements.length, 'elements,', connectors.length, 'connectors')
+        
+        isReceivingUpdate.current = true
+        
+        // Clear current board
+        useCanvasStore.getState().clearBoard()
+        useConnectorStore.getState().clearConnectors()
+        
+        // Load elements from server
+        const wasReadOnly = useUIStore.getState().isReadOnly
+        useUIStore.getState().setReadOnly(false)
+        
+        elements.forEach((element: any) => {
+          addElement(element)
+        })
+        
+        connectors.forEach((connector: any) => {
+          addConnector(connector)
+        })
+        
+        useUIStore.getState().setReadOnly(wasReadOnly)
+        
+        setTimeout(() => {
+          isReceivingUpdate.current = false
+          console.log('✅ Board sync complete')
+        }, 100)
       })
 
       // Listen for element changes from other users
