@@ -1,8 +1,12 @@
+https://github.com/user-attachments/assets/09e825bb-cc6e-4869-834b-901182d5ca86
+
+
 # Collaborative Whiteboard
 
 Production-level Figma-like collaborative whiteboard built with React, TypeScript, and HTML5 Canvas.
 
 ## Features
+
 
 ### Core Drawing Tools
 ✅ Drawing tools: Rectangle, Ellipse, Triangle, Star, Arrow, Line, Text, Freehand Path
